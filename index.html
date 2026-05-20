@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>INSS Master AI • Professor Virtual da Central 135</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep: #09090b;
+            --bg-panel: #111115;
+            --bg-card: #18181d;
+            --border: #26262c;
+            --accent: #7c3aed;
+            --accent-glow: #a78bfa;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 16px;
+            --radius-sm: 11px;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #333 transparent;
+        }
+        body {
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .glass {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+        }
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            transition: all 0.22s ease;
+            cursor: pointer;
+        }
+        .glass-card:hover {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 22px rgba(124, 58, 237, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 19px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 8px 18px rgba(124, 58, 237, 0.45);
+        }
+        .btn-accent:hover {
+            background: #8b5cf6;
+            box-shadow: 0 12px 26px rgba(139, 92, 246, 0.6);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent-glow);
+            border-radius: 25px;
+            padding: 9px 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .btn-outline:hover {
+            background: rgba(124, 58, 237, 0.08);
+        }
+
+        .chat-bubble-user {
+            background: var(--accent);
+            color: #fff;
+            border-radius: 20px 20px 6px 20px;
+            padding: 12px 18px;
+            max-width: 78%;
+            align-self: flex-end;
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.5);
+            animation: slideUp 0.25s ease;
+        }
+        .chat-bubble-ai {
+            background: #1a1a21;
+            border: 1px solid #2a2a33;
+            border-radius: 20px 20px 20px 6px;
+            padding: 16px 18px;
+            max-width: 88%;
+            align-self: flex-start;
+            animation: slideUp 0.3s ease;
+            line-height: 1.5;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .highlight-box {
+            border-left: 3px solid var(--accent);
+            background: rgba(124, 58, 237, 0.06);
+            padding: 10px 14px;
+            border-radius: 0 10px 10px 0;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 26px;
+            max-width: 600px;
+            width: 92%;
+            max-height: 84vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 55px rgba(0, 0, 0, 0.9);
+        }
+        .flashcard-container {
+            perspective: 1100px;
+            width: 100%;
+            height: 240px;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.45s ease;
+            transform-style: preserve-3d;
+        }
+        .flashcard-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            text-align: center;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+        }
+        .flashcard-back {
+            border-color: var(--accent);
+            transform: rotateY(180deg);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+                position: absolute;
+                z-index: 50;
+                height: 100%;
+                width: 275px;
+                box-shadow: 10px 0 30px #000;
+            }
+            .sidebar.visible {
+                display: flex;
+            }
+            .mobile-toggle {
+                display: flex !important;
+            }
+            .chat-bubble-user,
+            .chat-bubble-ai {
+                max-width: 93%;
+            }
+        }
+        .mobile-toggle {
+            display: none;
+        }
+        .tag-suggestion {
+            background: rgba(124, 58, 237, 0.15);
+            color: #c4b5fd;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            cursor: pointer;
+            border: 1px solid rgba(124, 58, 237, 0.35);
+            transition: 0.2s;
+        }
+        .tag-suggestion:hover {
+            background: rgba(124, 58, 237, 0.28);
+            border-color: #a78bfa;
+        }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar" class="sidebar w-72 flex-shrink-0 h-full bg-[#0c0c10] border-r border-[#23232a] flex flex-col z-40">
+        <div class="p-5 border-b border-[#23232a] flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center text-white"><i class="fa-solid fa-building-columns"></i></div>
+            <div><h2 class="font-bold text-base text-white">INSS Master AI</h2><p class="text-xs text-gray-400">Central 135 · Professor</p></div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3 space-y-1" id="topicList"></div>
+        <div class="p-3 border-t border-[#23232a] space-y-2">
+            <button onclick="openFlashcards()" class="btn-outline w-full text-sm flex items-center justify-center gap-2 py-2.5"><i class="fa-solid fa-layer-group"></i> Flashcards</button>
+            <button onclick="openQuiz()" class="btn-outline w-full text-sm flex items-center justify-center gap-2 py-2.5"><i class="fa-solid fa-circle-question"></i> Quiz</button>
+            <button onclick="clearChat()" class="w-full text-sm py-2.5 text-gray-400 border border-gray-700 rounded-full bg-transparent cursor-pointer hover:text-white">Limpar Conversa</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative bg-[#09090b]">
+        <button class="mobile-toggle absolute top-4 left-4 z-30 bg-[#1a1a21] text-white p-2.5 rounded-xl border border-[#333] cursor-pointer" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <header class="flex items-center px-5 py-3 border-b border-[#23232a] bg-[#0c0c10] flex-shrink-0 gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-700/40 flex items-center justify-center"><i class="fa-solid fa-robot text-purple-300"></i></div>
+            <span class="font-semibold text-white text-sm">INSS Master AI</span>
+            <span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">didático</span>
+        </header>
+        <div id="chatContainer" class="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col"></div>
+        <div class="px-4 pb-4 pt-2 flex-shrink-0">
+            <div class="glass p-2 flex items-center gap-2 max-w-3xl mx-auto">
+                <input id="userInput" type="text" placeholder="Digite sua dúvida sobre INSS..." class="flex-1 bg-transparent text-white placeholder-gray-500 px-3 py-2.5 outline-none text-sm border-none" onkeydown="if(event.key==='Enter')sendMessage()">
+                <button onclick="sendMessage()" class="btn-accent flex items-center gap-1 px-4 py-2 text-sm"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+            <div class="flex gap-2 mt-2 max-w-3xl mx-auto flex-wrap" id="quickButtons"></div>
+        </div>
+    </main>
+
+    <div id="flashcardModal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="modal-content"><div class="flex justify-between mb-3"><h3 class="text-white font-bold text-lg"><i class="fa-solid fa-layer-group text-purple-400"></i> Flashcards</h3><button onclick="document.getElementById('flashcardModal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl">&times;</button></div>
+            <div class="flashcard-container mb-4" onclick="flipFlashcard()"><div id="flashcardInner" class="flashcard-inner"><div class="flashcard-front"><span class="text-xs text-purple-400">PERGUNTA</span><p id="flashcardQ" class="text-white text-lg mt-2"></p></div><div class="flashcard-back"><span class="text-xs text-emerald-400">DECORE</span><p id="flashcardA" class="text-white text-lg mt-2 font-bold"></p></div></div></div>
+            <div class="flex gap-3 justify-center"><button onclick="prevFlashcard()" class="btn-outline text-sm px-4 py-2"><i class="fa-solid fa-arrow-left"></i></button><button onclick="nextFlashcard()" class="btn-accent text-sm px-4 py-2">Próximo</button></div><p class="text-center text-xs text-gray-500 mt-3" id="flashcardCounter"></p></div>
+    </div>
+    <div id="quizModal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="modal-content"><div class="flex justify-between mb-3"><h3 class="text-white font-bold text-lg"><i class="fa-solid fa-circle-question text-yellow-400"></i> Quiz 135</h3><button onclick="document.getElementById('quizModal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl">&times;</button></div>
+            <p id="quizQuestion" class="text-white text-base font-medium mb-3"></p><div id="quizOptions" class="space-y-2 mb-3"></div><p id="quizFeedback" class="text-sm font-semibold text-center min-h-[28px]"></p><p id="quizExplanation" class="text-xs text-gray-400 text-center hidden"></p>
+            <div class="flex gap-3 justify-center mt-3"><button onclick="nextQuizQuestion()" class="btn-accent text-sm px-4 py-2">Próxima</button></div><p id="quizScore" class="text-center text-xs text-gray-500 mt-2"></p></div>
+    </div>
+
+    <script>
+        (function() {
+            const CONFIDENCE_THRESHOLD = 0.45;
+
+            const DB = [
+                // ==================== FUNDAMENTOS ====================
+                {
+                    id: 'carencia',
+                    titulo: 'Carência',
+                    categoria: 'Fundamentos',
+                    aliases: ['carencia', 'carência', 'número mínimo de contribuições', 'meses mínimos',
+                        'contribuições mínimas', 'quantas contribuições', 'tempo mínimo de contribuição'
+                    ],
+                    palavras_chave: ['carência', 'carencia', 'mínimo', 'contribuições', 'meses', '180', '12', '10',
+                        '15 anos', 'pagas'
+                    ],
+                    conceito: 'Carência é o número mínimo de contribuições mensais que o segurado precisa ter para ter direito a um benefício do INSS.',
+                    explicacao: 'Pense na carência como uma "senha de entrada". Para a maioria dos benefícios, você precisa ter contribuído um número mínimo de meses. Não basta ter idade ou estar doente — é preciso ter pago um certo número de parcelas. Cada benefício tem uma carência diferente.',
+                    exemplo: 'Para se aposentar por idade, a pessoa precisa de 180 contribuições (15 anos). Já para o auxílio-doença, são 12 contribuições.',
+                    pegadinha: 'Carência NÃO é a mesma coisa que tempo de contribuição. Tempo de contribuição é o total de meses que contam para aposentadoria; carência é o número mínimo de meses pagos exigidos para liberar o benefício.',
+                    erro_comum: 'Achar que todo benefício tem a mesma carência. Cada um tem a sua: auxílio-doença = 12, aposentadoria por idade = 180, salário-maternidade = 10.',
+                    dica_135: 'Sempre consulte o CNIS e conte apenas os meses efetivamente pagos. Períodos em atraso não contam como carência.',
+                    decorar: 'Carência = senha de entrada. Cada benefício exige um número mínimo de meses pagos.',
+                    documentos: 'CNIS atualizado, guias de recolhimento.',
+                    quando_negado: 'Se o segurado não tiver o número mínimo de contribuições exigido para aquele benefício.'
+                }, {
+                    id: 'periodo-graca',
+                    titulo: 'Período de Graça',
+                    categoria: 'Fundamentos',
+                    aliases: ['periodo de graca', 'período de graça', 'tempo sem contribuir', 'sem pagar',
+                        'cobertura sem pagar', 'proteção sem contribuir', 'parou de contribuir', 'desempregado',
+                        'continuar protegido'
+                    ],
+                    palavras_chave: ['período', 'graça', 'graça', 'sem', 'pagar', 'contribuir', 'cobertura',
+                        'proteção', 'desempregado', 'parou', 'tempo', '12', '24', '36'
+                    ],
+                    conceito: 'Período de graça é o tempo que o segurado continua protegido pelo INSS mesmo depois de parar de contribuir.',
+                    explicacao: 'Imagine um "colchão de proteção". Quando você para de pagar o INSS, não perde os direitos imediatamente. A lei te dá um prazo extra para que você ainda possa usar os benefícios. O prazo padrão é 12 meses, mas pode ser estendido.',
+                    exemplo: 'João foi demitido hoje. Mesmo sem pagar mais nada, ele ainda pode pedir auxílio-doença por até 12 meses. Se ele tiver mais de 120 contribuições, ganha mais 12 meses, totalizando 24.',
+                    pegadinha: 'O período de graça não é sempre 12 meses. Pode ser de 3, 6, 12, 24 ou até 36 meses, dependendo da situação do segurado. Desempregado involuntário com mais de 120 contribuições pode chegar a 36 meses.',
+                    erro_comum: 'Achar que no dia seguinte ao desligamento já perdeu tudo. A proteção continua por meses.',
+                    dica_135: 'Sempre verifique a data da última contribuição e some o prazo correspondente. Pergunte se o segurado recebeu seguro-desemprego.',
+                    decorar: 'Período de graça = colchão de proteção. Mesmo sem pagar, você continua segurado por um tempo.',
+                    documentos: 'Carteira de trabalho, termo de rescisão, comprovante de seguro-desemprego.',
+                    quando_negado: 'Se o prazo já venceu e o segurado não voltou a contribuir.'
+                }, {
+                    id: 'qualidade-segurado',
+                    titulo: 'Qualidade de Segurado',
+                    categoria: 'Fundamentos',
+                    aliases: ['qualidade segurado', 'ser segurado', 'ainda é segurado', 'condição de segurado',
+                        'status segurado', 'vínculo com inss'
+                    ],
+                    palavras_chave: ['qualidade', 'segurado', 'condição', 'status', 'ativo', 'vínculo', 'proteção'],
+                    conceito: 'Qualidade de segurado é a condição que mantém a pessoa vinculada ao INSS e com direito aos benefícios.',
+                    explicacao: 'É como ter o "cadastro ativo" no INSS. Você mantém essa qualidade enquanto estiver contribuindo ou dentro do período de graça. Sem ela, a maioria dos benefícios não pode ser concedida.',
+                    exemplo: 'Maria contribuiu por 8 anos e parou há 6 meses. Ela ainda tem qualidade de segurado porque está no período de graça de 12 meses.',
+                    pegadinha: 'Alguns benefícios não exigem qualidade de segurado, como o BPC/LOAS. E a aposentadoria por idade pode ser concedida mesmo sem qualidade, desde que a carência já esteja completa.',
+                    erro_comum: 'Confundir qualidade de segurado com carência. São coisas diferentes: qualidade é o status ativo; carência é o número mínimo de pagamentos.',
+                    dica_135: 'Verifique no CNIS a data do último recolhimento e some o período de graça para saber se o segurado ainda está ativo.',
+                    decorar: 'Qualidade de segurado = estar com o cadastro ativo no INSS.',
+                    documentos: 'CNIS, comprovantes de contribuição.',
+                    quando_negado: 'Após o fim do período de graça sem nova contribuição.'
+                }, {
+                    id: 'dependentes',
+                    titulo: 'Dependentes',
+                    categoria: 'Fundamentos',
+                    aliases: ['dependente', 'dependentes inss', 'quem é dependente', 'filho dependente', 'cônjuge',
+                        'companheiro', 'pensão dependentes'
+                    ],
+                    palavras_chave: ['dependentes', 'dependente', 'cônjuge', 'filho', 'pensão', 'classe'],
+                    conceito: 'Dependentes são as pessoas que têm direito a receber benefícios como pensão por morte e auxílio-reclusão.',
+                    explicacao: 'A lei organiza os dependentes em classes. Classe 1: cônjuge, companheiro(a) e filho menor de 21 anos ou inválido. Classe 2: pais. Classe 3: irmãos menores de 21 ou inválidos. A classe anterior exclui a seguinte.',
+                    exemplo: 'Se o segurado falecido tem esposa e filho de 19 anos, ambos recebem pensão. Se não tem esposa nem filho, os pais podem receber.',
+                    pegadinha: 'Filho maior de 21 anos perde a condição de dependente, mesmo que esteja na faculdade. A exceção é se for inválido desde antes dos 21.',
+                    erro_comum: 'Achar que filho universitário maior de 21 anos continua sendo dependente. Não continua.',
+                    dica_135: 'Sempre pergunte a idade dos filhos e se há invalidez. Confira a classe dos dependentes antes de informar.',
+                    decorar: 'Dependentes: Classe 1 (cônjuge + filho <21) tem prioridade sobre as demais.',
+                    documentos: 'Certidão de nascimento, casamento, declaração de união estável.',
+                    quando_negado: 'Se não houver dependentes na classe prioritária ou se o filho já tiver mais de 21 anos.'
+                }, {
+                    id: 'cnis',
+                    titulo: 'CNIS',
+                    categoria: 'Fundamentos',
+                    aliases: ['cnis', 'cadastro nacional de informações sociais', 'extrato inss', 'consulta extrato'],
+                    palavras_chave: ['cnis', 'extrato', 'cadastro', 'informações', 'sociais', 'consulta'],
+                    conceito: 'CNIS é o Cadastro Nacional de Informações Sociais — o histórico completo de contribuições e vínculos do trabalhador.',
+                    explicacao: 'É como o "extrato bancário" da sua vida previdenciária. Lá aparecem todas as empresas onde você trabalhou, os salários e as contribuições feitas. É a principal ferramenta de consulta do operador da Central 135.',
+                    exemplo: 'Antes de agendar uma aposentadoria, o operador consulta o CNIS para ver se as contribuições estão todas registradas.',
+                    pegadinha: 'O CNIS pode conter erros. Períodos de trabalho podem estar faltando. Cabe ao segurado conferir e pedir a correção.',
+                    erro_comum: 'Confiar cegamente no CNIS sem orientar o segurado a verificar se está tudo certo.',
+                    dica_135: 'Sempre oriente o segurado a acessar o Meu INSS e conferir o extrato antes de fazer qualquer requerimento.',
+                    decorar: 'CNIS = extrato da vida previdenciária. Confira sempre.',
+                    documentos: 'Documento de identidade, CPF.',
+                    quando_negado: 'Não se trata de um benefício, é uma base de consulta.'
+                },
+
+                // ==================== BENEFÍCIOS ====================
+                {
+                    id: 'aposentadoria-idade',
+                    titulo: 'Aposentadoria por Idade',
+                    categoria: 'Benefícios',
+                    aliases: ['aposentadoria idade', 'aposentar por idade', 'idade mínima', 'aposentadoria urbana'],
+                    palavras_chave: ['aposentadoria', 'idade', '65', '62', '180', 'urbana', 'rural'],
+                    conceito: 'Aposentadoria por idade é o benefício concedido ao segurado que atinge a idade mínima e cumpre a carência exigida.',
+                    explicacao: 'Na regra geral após a Reforma (EC 103/2019), a mulher precisa ter 62 anos e o homem 65 anos. Ambos precisam de no mínimo 180 meses de carência (15 anos). O valor é calculado como 60% da média + 2% por ano que exceder 15 anos (mulher) ou 20 anos (homem).',
+                    exemplo: 'Dona Lúcia tem 62 anos e contribuiu por 16 anos. Ela receberá 62% da média salarial (60% + 2% por 1 ano extra).',
+                    pegadinha: 'A idade da mulher subiu de 60 para 62 anos com a EC 103/2019. Quem já tinha direito adquirido antes da reforma pode usar a regra antiga.',
+                    erro_comum: 'Achar que ainda vale 60 anos para mulher em qualquer caso. Só vale para quem completou os requisitos antes de 13/11/2019.',
+                    dica_135: 'Pergunte a data de nascimento e consulte o CNIS. Verifique se a pessoa tem direito adquirido ou precisa seguir a regra nova.',
+                    decorar: 'Idade urbana: H=65, M=62. Carência: 180 meses.',
+                    documentos: 'RG, CPF, CNIS, comprovantes de contribuição.',
+                    quando_negado: 'Se não atingiu a idade mínima ou a carência de 180 meses.'
+                }, {
+                    id: 'auxilio-doenca',
+                    titulo: 'Auxílio-Doença',
+                    categoria: 'Benefícios',
+                    aliases: ['auxilio doença', 'auxílio-doença', 'incapacidade temporária', 'encostado', 'afastamento',
+                        'benefício incapacidade'
+                    ],
+                    palavras_chave: ['auxílio', 'doença', 'incapacidade', 'temporária', 'afastamento', 'perícia',
+                        '12', 'médico'
+                    ],
+                    conceito: 'Auxílio-doença é o benefício pago ao segurado que fica temporariamente incapaz de trabalhar por doença ou acidente.',
+                    explicacao: 'O segurado precisa ter qualidade de segurado e, em regra, 12 meses de carência. Passa por perícia médica do INSS para comprovar a incapacidade. O benefício substitui o salário durante o período de afastamento.',
+                    exemplo: 'Pedro quebrou a perna e vai ficar 3 meses sem andar. Ele tem mais de 12 contribuições e está empregado. Pode pedir auxílio-doença e passará por perícia.',
+                    pegadinha: 'Doenças graves listadas em lei (câncer, AIDS, cardiopatia grave, etc.) NÃO exigem os 12 meses de carência. Mas ainda assim é preciso ter qualidade de segurado.',
+                    erro_comum: 'Achar que qualquer atestado médico garante o benefício. A decisão final é do perito do INSS.',
+                    dica_135: 'Oriente o segurado a levar todos os laudos, exames e receitas no dia da perícia. Chegar 15 minutos antes.',
+                    decorar: 'Auxílio-doença = incapacidade temporária comprovada por perícia. Carência: 12 meses.',
+                    documentos: 'Laudos médicos, exames, atestados, documento de identidade.',
+                    quando_negado: 'Se a perícia não comprovar incapacidade ou se faltar carência/qualidade de segurado.'
+                }, {
+                    id: 'bpc-loas',
+                    titulo: 'BPC/LOAS',
+                    categoria: 'Benefícios',
+                    aliases: ['bpc', 'loas', 'benefício assistencial', 'idoso pobre', 'deficiente pobre',
+                        'benefício sem contribuir'
+                    ],
+                    palavras_chave: ['bpc', 'loas', 'assistencial', 'pobre', '1 salário', 'sem contribuição',
+                        'deficiente', 'idoso'
+                    ],
+                    conceito: 'BPC/LOAS é um benefício assistencial de 1 salário mínimo para idoso com 65 anos ou mais e pessoa com deficiência de baixa renda.',
+                    explicacao: 'Diferente da aposentadoria, o BPC NÃO exige contribuição ao INSS. Mas exige que a renda familiar por pessoa seja inferior a 1/4 do salário mínimo. O beneficiário não recebe 13º salário e o benefício não gera pensão por morte.',
+                    exemplo: 'Dona Josefa tem 68 anos, nunca contribuiu, e a renda da família dividida pelos membros dá menos de 1/4 do salário mínimo. Ela pode receber BPC.',
+                    pegadinha: 'BPC não é vitalício. A cada 2 anos o beneficiário passa por revisão. Se a renda familiar aumentar, pode perder o benefício.',
+                    erro_comum: 'Confundir BPC com aposentadoria. BPC é assistencial, não previdenciário.',
+                    dica_135: 'Oriente a inscrição no CadÚnico antes do requerimento. O benefício é pago pelo INSS mas é assistencial.',
+                    decorar: 'BPC = 1 SM, sem contribuição, para idoso (+65) ou PcD de baixa renda.',
+                    documentos: 'CadÚnico atualizado, comprovante de renda, laudo médico (para PcD).',
+                    quando_negado: 'Se a renda per capita ultrapassar 1/4 do salário mínimo.'
+                }, {
+                    id: 'pensao-morte',
+                    titulo: 'Pensão por Morte',
+                    categoria: 'Benefícios',
+                    aliases: ['pensão morte', 'pensão por morte', 'pensão', 'viuvez', 'dependente falecido'],
+                    palavras_chave: ['pensão', 'morte', 'falecimento', 'dependentes', 'cônjuge', 'filho', '50%'],
+                    conceito: 'Pensão por morte é o benefício pago aos dependentes do segurado que falece.',
+                    explicacao: 'O valor é 50% da aposentadoria que o falecido recebia ou teria direito, mais 10% por dependente. A duração para o cônjuge varia conforme a idade na data do óbito: menos de 22 anos = 3 anos; entre 22 e 27 = 6 anos; e assim por diante.',
+                    exemplo: 'Carlos faleceu e tinha esposa de 35 anos e filho de 10. A esposa receberá por 20 anos (idade entre 30 e 40), o filho até 21 anos.',
+                    pegadinha: 'Cônjuge muito jovem (menos de 22 anos) recebe pensão por apenas 3 anos, não vitalícia. Isso mudou com a EC 103/2019.',
+                    erro_comum: 'Achar que a pensão é vitalícia para qualquer cônjuge. A duração depende da idade e do tempo de união.',
+                    dica_135: 'Pergunte a idade do cônjuge na data do óbito e há quanto tempo era casado ou vivia em união estável.',
+                    decorar: 'Pensão = 50% + 10% por dependente. Duração para cônjuge varia por idade.',
+                    documentos: 'Certidão de óbito, documentos dos dependentes.',
+                    quando_negado: 'Se o falecido não era segurado ou não há dependentes na classe prioritária.'
+                }, {
+                    id: 'salario-maternidade',
+                    titulo: 'Salário-Maternidade',
+                    categoria: 'Benefícios',
+                    aliases: ['salário maternidade', 'licença maternidade', 'maternidade'],
+                    palavras_chave: ['maternidade', 'gestante', 'parto', 'adoção', '120', '10'],
+                    conceito: 'Salário-maternidade é o benefício pago à segurada durante 120 dias de afastamento por parto, adoção ou aborto legal.',
+                    explicacao: 'A empregada recebe da empresa, que depois compensa com o INSS. A contribuinte individual (MEI, autônoma) precisa de 10 meses de carência e recebe direto do INSS.',
+                    exemplo: 'Ana é MEI e contribui há 1 ano. Ao engravidar, ela terá direito ao salário-maternidade.',
+                    pegadinha: 'Adoção também dá direito, independentemente da idade da criança adotada.',
+                    erro_comum: 'Achar que só a mãe biológica tem direito. Adotantes também.',
+                    dica_135: 'Empregada: oriente a pedir na empresa. MEI e autônoma: requerimento no Meu INSS.',
+                    decorar: 'Salário-maternidade = 120 dias. Carência: 10 meses para autônomas.',
+                    documentos: 'Certidão de nascimento, atestado médico.',
+                    quando_negado: 'Falta de carência para contribuinte individual.'
+                }, {
+                    id: 'aposentadoria-rural',
+                    titulo: 'Aposentadoria Rural',
+                    categoria: 'Benefícios',
+                    aliases: ['rural', 'aposentadoria rural', 'agricultor', 'segurado especial'],
+                    palavras_chave: ['rural', 'agricultor', '55', '60', 'segurado especial', 'campo'],
+                    conceito: 'Aposentadoria rural é o benefício para o trabalhador do campo com idade reduzida: 60 anos (homem) e 55 anos (mulher).',
+                    explicacao: 'O trabalhador rural não precisa ter contribuído em dinheiro, mas precisa comprovar 180 meses de atividade rural. Documentos como notas fiscais, declaração de sindicato e testemunhas são fundamentais.',
+                    exemplo: 'Seu Antônio, 60 anos, agricultor familiar, comprovou a atividade rural com notas fiscais e testemunhas. Conseguiu aposentadoria.',
+                    pegadinha: 'Não basta morar na roça. É preciso comprovar o trabalho rural efetivo.',
+                    erro_comum: 'Achar que só a idade já garante. A comprovação da atividade é essencial.',
+                    decorar: 'Rural: H=60, M=55 + 180 meses de atividade comprovada.',
+                    documentos: 'Notas fiscais, declaração de sindicato, testemunhas.',
+                    quando_negado: 'Se não comprovar os 180 meses de atividade rural.'
+                },
+
+                // ==================== OPERACIONAL ====================
+                {
+                    id: 'agendamento',
+                    titulo: 'Agendamento 135',
+                    categoria: 'Operacional',
+                    aliases: ['agendar', 'marcar', 'agendamento', 'central 135', 'marcar perícia'],
+                    palavras_chave: ['agendamento', 'agendar', 'marcar', '135', 'meu inss', 'perícia'],
+                    conceito: 'Agendamento é o serviço de marcação de atendimento ou perícia no INSS, feito pelo telefone 135 ou pelo Meu INSS.',
+                    explicacao: 'O operador coleta CPF, confirma dados pessoais e escolhe a agência e data disponível. O agendamento não garante a concessão do benefício, apenas marca o atendimento.',
+                    exemplo: 'Um segurado liga no 135: "Quero agendar perícia médica". O operador agenda e informa data, hora e documentos necessários.',
+                    pegadinha: 'O agendamento é apenas a marcação. Se o segurado faltar sem justificativa, pode perder o benefício ou precisar reagendar.',
+                    erro_comum: 'Achar que o agendamento já garante o benefício. É só o primeiro passo.',
+                    dica_135: 'Sempre informe o número de protocolo e oriente o segurado a chegar com 15 minutos de antecedência.',
+                    decorar: 'Agendamento = marcar data. Não garante benefício.',
+                    documentos: 'CPF, documento com foto.',
+                    quando_negado: 'Falta de vagas ou dados cadastrais inconsistentes.'
+                }, {
+                    id: 'pericia',
+                    titulo: 'Perícia Médica',
+                    categoria: 'Operacional',
+                    aliases: ['perícia', 'pericia', 'exame médico', 'perito', 'perícia inss'],
+                    palavras_chave: ['perícia', 'perito', 'médico', 'avaliação', 'incapacidade', 'exame'],
+                    conceito: 'Perícia médica é a avaliação feita por um médico do INSS para comprovar a incapacidade do segurado.',
+                    explicacao: 'Obrigatória para auxílio-doença e aposentadoria por invalidez. O segurado deve levar todos os laudos e exames. A decisão do perito é soberana.',
+                    exemplo: 'Maria agendou perícia, levou exames e laudos. O perito constatou incapacidade e concedeu auxílio-doença por 6 meses.',
+                    pegadinha: 'Faltar à perícia sem justificativa pode fazer o benefício ser cancelado.',
+                    erro_comum: 'Achar que o médico particular já resolve. A palavra final é do perito do INSS.',
+                    dica_135: 'Oriente o segurado a levar laudos, exames, receitas e um resumo do tratamento.',
+                    decorar: 'Perícia = médico do INSS avalia incapacidade. Leve todos os documentos.',
+                    documentos: 'Laudos, exames, atestados, documento de identidade.',
+                    quando_negado: 'Se o perito não constatar incapacidade.'
+                },
+
+                // ==================== REFORMA ====================
+                {
+                    id: 'ec103',
+                    titulo: 'Reforma da Previdência (EC 103)',
+                    categoria: 'Reforma',
+                    aliases: ['ec 103', 'reforma', 'reforma previdenciária', 'nova previdência'],
+                    palavras_chave: ['ec', '103', 'reforma', 'previdência', '2019', 'pontos', 'pedágio', '60%'],
+                    conceito: 'A EC 103/2019 é a emenda constitucional que alterou as regras de aposentadoria e benefícios do INSS a partir de 13/11/2019.',
+                    explicacao: 'Ela criou idade mínima progressiva, pedágios, novo cálculo de benefício (60% + 2% por ano excedente) e regras de transição para quem já contribuía antes.',
+                    exemplo: 'Quem tinha 33 anos de contribuição em 2019 pode usar pedágio de 50% sobre o tempo faltante.',
+                    pegadinha: 'Quem já tinha direito adquirido antes de 13/11/2019 não é afetado pela reforma.',
+                    erro_comum: 'Achar que todas as regras antigas acabaram. As regras de transição protegem quem já estava no sistema.',
+                    dica_135: 'Sempre verifique a data de filiação e se há direito adquirido antes de aplicar as novas regras.',
+                    decorar: 'EC 103 = 60% + 2% por ano extra. Direito adquirido é respeitado.',
+                    documentos: 'CNIS atualizado.',
+                    quando_negado: 'Não se trata de um benefício, é a lei que define as regras.'
+                }
+            ];
+
+            // ==================== NLP ENGINE ====================
+            function norm(text) {
+                return text.toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9\s]/g, ' ')
+                    .replace(/\s+/g, ' ').trim();
+            }
+            const STOPWORDS = ['de', 'da', 'do', 'das', 'dos', 'e', 'a', 'o', 'que', 'para', 'com', 'um', 'uma', 'no',
+                'na', 'os', 'as', 'por', 'em', 'qual', 'como', 'quanto', 'tempo', 'precisa', 'ter', 'fazer', 'pedir',
+                'solicitar', 'sobre', 'esse', 'essa', 'isso', 'aquilo', 'me', 'te', 'se', 'nos', 'lhe', 'pois', 'mas',
+                'ou', 'nem', 'tambem', 'muito', 'pouco', 'mais', 'menos', 'cada', 'todo', 'toda'
+            ];
+
+            function cleanQuery(text) {
+                return text.split(' ').filter(w => !STOPWORDS.includes(w) && w.length > 1).join(' ');
+            }
+
+            function matchScore(entry, normQ, cleanQ) {
+                let score = 0;
+                const terms = [...entry.palavras_chave, ...entry.aliases.map(a => norm(a))];
+                for (const t of terms) {
+                    if (normQ.includes(t)) score += 22;
+                    const tWords = t.split(' ');
+                    const matched = tWords.filter(tw => cleanQ.split(' ').includes(tw)).length;
+                    if (matched >= 3) score += 15;
+                    else if (matched === 2) score += 9;
+                    else if (matched === 1 && tWords.length === 1 && t.length >= 4) score += 5;
+                }
+                if (normQ.includes(norm(entry.titulo))) score += 18;
+                if (normQ.includes(norm(entry.categoria))) score += 4;
+                return score;
+            }
+
+            function searchBest(query) {
+                const nQ = norm(query);
+                const cQ = cleanQuery(nQ);
+                if (cQ.length < 2) return { entry: null, confidence: 0 };
+                let best = null;
+                let bestScore = 0;
+                let all = [];
+                for (const e of DB) {
+                    const s = matchScore(e, nQ, cQ);
+                    all.push({ entry: e, score: s });
+                    if (s > bestScore) { bestScore = s;
+                        best = e; }
+                }
+                all.sort((a, b) => b.score - a.score);
+                const confidence = Math.min(bestScore / 55, 1.0);
+                return { entry: best, confidence, suggestions: all.slice(0, 4).filter(a => a.score > 8).map(a => a
+                        .entry) };
+            }
+
+            // ==================== CONTEXTO ====================
+            let contextTopic = null;
+            let contextLastQuery = '';
+
+            function detectSubIntent(query, context) {
+                const q = norm(query);
+                if (!context) return null;
+                if (q.includes('carência') || q.includes('carencia')) return 'carência';
+                if (q.includes('documento') || q.includes('papel') || q.includes('precisa levar')) return 'documentos';
+                if (q.includes('negar') || q.includes('negado') || q.includes('indeferido')) return 'quando_negado';
+                if (q.includes('exemplo') || q.includes('pratico')) return 'exemplo';
+                if (q.includes('decorar') || q.includes('frase') || q.includes('resumo')) return 'decorar';
+                if (q.includes('como explicar') || q.includes('central')) return 'dica_135';
+                if (q.includes('pegadinha') || q.includes('erro')) return 'pegadinha';
+                return null;
+            }
+
+            function isContinuation(query) {
+                const q = norm(query);
+                return /^(e\s|no\s|na\s|e\sno\s|e\sna\s|nesse\s|nessa\s|desse\s|dessa\s|sobre\sesse\s|sobre\sessa\s)/.test(
+                    q) && q.split(' ').length <= 4;
+            }
+
+            // ==================== RESPONSE BUILDER ====================
+            function buildDidacticResponse(entry) {
+                let h = '<div class="space-y-2">';
+                h +=
+                    `<div class="highlight-box" style="border-left-color:#10b981;"><span class="text-emerald-400 font-semibold text-sm">✅ O QUE É</span><p class="text-white text-sm mt-1 font-medium">${entry.conceito}</p></div>`;
+                h +=
+                    `<div class="highlight-box" style="border-left-color:#60a5fa;"><span class="text-blue-300 font-semibold text-sm">🧠 EXPLICAÇÃO FÁCIL</span><p class="text-gray-200 text-sm mt-1">${entry.explicacao}</p></div>`;
+                if (entry.exemplo) h +=
+                    `<div class="highlight-box" style="border-left-color:#34d399;"><span class="text-emerald-300 font-semibold text-sm">📌 EXEMPLO REAL</span><p class="text-gray-200 text-sm mt-1">${entry.exemplo}</p></div>`;
+                if (entry.pegadinha) h +=
+                    `<div class="highlight-box" style="border-left-color:#fbbf24;"><span class="text-yellow-400 font-semibold text-sm">⚠️ PEGADINHA</span><p class="text-gray-200 text-sm mt-1">${entry.pegadinha}</p></div>`;
+                if (entry.erro_comum) h +=
+                    `<div class="highlight-box" style="border-left-color:#ef4444;"><span class="text-red-400 font-semibold text-sm">🚫 ERRO COMUM</span><p class="text-gray-200 text-sm mt-1">${entry.erro_comum}</p></div>`;
+                if (entry.dica_135) h +=
+                    `<div class="highlight-box" style="border-left-color:#c084fc;"><span class="text-purple-300 font-semibold text-sm">📞 COMO EXPLICAR NO 135</span><p class="text-gray-200 text-sm mt-1">${entry.dica_135}</p></div>`;
+                h +=
+                    `<div class="highlight-box" style="border-left-color:#f59e0b; background:rgba(245,158,11,0.08);"><span class="text-amber-400 font-semibold text-sm">🧠 FRASE PRA DECORAR</span><p class="text-white text-sm font-bold mt-1">${entry.decorar}</p></div>`;
+                h +=
+                    `<div class="flex gap-2 mt-3 flex-wrap"><button onclick="showDecorar('${entry.id}')" class="text-xs bg-yellow-500/12 text-yellow-300 px-3 py-1.5 rounded-full border border-yellow-500/35 hover:bg-yellow-500/20 cursor-pointer">🧠 Decorar</button><button onclick="openQuizWithTopic('${entry.id}')" class="text-xs bg-emerald-500/12 text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-500/35 hover:bg-emerald-500/20 cursor-pointer">❓ Quiz</button></div></div>`;
+                return h;
+            }
+
+            function buildSubIntentResponse(entry, subIntent) {
+                let resp = '';
+                switch (subIntent) {
+                    case 'carência':
+                        resp =
+                            `<div class="highlight-box"><span class="text-blue-300 font-semibold text-sm">📎 Sobre a carência de ${entry.titulo}:</span><p class="text-white text-sm mt-1">${entry.conceito}</p></div>`;
+                        break;
+                    case 'documentos':
+                        resp =
+                            `<div class="highlight-box"><span class="text-blue-300 font-semibold text-sm">📎 Documentos para ${entry.titulo}:</span><p class="text-white text-sm mt-1">${entry.documentos || 'Documento de identidade e CPF.'}</p></div>`;
+                        break;
+                    case 'quando_negado':
+                        resp =
+                            `<div class="highlight-box" style="border-left-color:#ef4444;"><span class="text-red-400 font-semibold text-sm">📎 Quando ${entry.titulo} é negado:</span><p class="text-white text-sm mt-1">${entry.quando_negado || 'Quando não cumpre os requisitos legais.'}</p></div>`;
+                        break;
+                    case 'exemplo':
+                        resp =
+                            `<div class="highlight-box" style="border-left-color:#34d399;"><span class="text-emerald-300 font-semibold text-sm">📎 Exemplo de ${entry.titulo}:</span><p class="text-white text-sm mt-1">${entry.exemplo || entry.conceito}</p></div>`;
+                        break;
+                    case 'decorar':
+                        resp =
+                            `<div class="highlight-box" style="border-left-color:#f59e0b;"><span class="text-amber-400 font-semibold text-sm">📎 Frase para decorar — ${entry.titulo}:</span><p class="text-white text-sm font-bold mt-1">${entry.decorar}</p></div>`;
+                        break;
+                    case 'dica_135':
+                        resp =
+                            `<div class="highlight-box" style="border-left-color:#c084fc;"><span class="text-purple-300 font-semibold text-sm">📎 Como explicar ${entry.titulo} no 135:</span><p class="text-white text-sm mt-1">${entry.dica_135 || 'Explique de forma simples e direta.'}</p></div>`;
+                        break;
+                    case 'pegadinha':
+                        resp =
+                            `<div class="highlight-box" style="border-left-color:#fbbf24;"><span class="text-yellow-400 font-semibold text-sm">📎 Pegadinha de ${entry.titulo}:</span><p class="text-white text-sm mt-1">${entry.pegadinha || 'Não há uma pegadinha específica.'}</p></div>`;
+                        break;
+                    default:
+                        resp = buildDidacticResponse(entry);
+                }
+                return `<div class="space-y-1"><p class="text-xs text-gray-500 mb-1">📎 Continuando sobre <strong>${entry.titulo}</strong>:</p>${resp}</div>`;
+            }
+
+            // ==================== CHAT ENGINE ====================
+            function addMsg(html, isUser = false) {
+                const c = document.getElementById('chatContainer');
+                const d = document.createElement('div');
+                d.className = isUser ? 'chat-bubble-user' : 'chat-bubble-ai';
+                d.innerHTML = isUser ? `<p class="text-sm">${html}</p>` : html;
+                c.appendChild(d);
+                c.scrollTop = c.scrollHeight;
+            }
+
+            function showTyping() {
+                const c = document.getElementById('chatContainer');
+                const d = document.createElement('div');
+                d.className = 'chat-bubble-ai';
+                d.id = 'typingIndicator';
+                d.innerHTML =
+                    '<div class="flex items-center gap-2"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span><span class="text-xs text-gray-400">preparando aula...</span></div>';
+                c.appendChild(d);
+                c.scrollTop = c.scrollHeight;
+            }
+
+            function removeTyping() { const e = document.getElementById('typingIndicator'); if (e) e.remove(); }
+
+            function processMsg(text) {
+                addMsg(text, true);
+                showTyping();
+                setTimeout(() => {
+                    removeTyping();
+                    const sub = detectSubIntent(text, contextTopic);
+                    if (sub && contextTopic) {
+                        addMsg(buildSubIntentResponse(contextTopic, sub));
+                        return;
+                    }
+                    if (isContinuation(text) && contextTopic) {
+                        const rest = norm(text).replace(/^(e\s|no\s|na\s|e\sno\s|e\sna\s|nesse\s|nessa\s|desse\s|dessa\s)/,
+                            '');
+                        const sr = searchBest(rest);
+                        if (sr.confidence >= CONFIDENCE_THRESHOLD && sr.entry && sr.entry.id === contextTopic.id) {
+                            addMsg(buildSubIntentResponse(contextTopic, 'carência'));
+                            return;
+                        }
+                    }
+                    const result = searchBest(text);
+                    if (result.confidence >= CONFIDENCE_THRESHOLD && result.entry) {
+                        contextTopic = result.entry;
+                        contextLastQuery = text;
+                        addMsg(buildDidacticResponse(result.entry));
+                    } else if (result.suggestions && result.suggestions.length > 0) {
+                        let h =
+                            '<p class="text-sm text-gray-300 mb-2">🤔 Não encontrei exatamente esse tema. Você quis dizer:</p><div class="flex flex-wrap gap-2">';
+                        result.suggestions.slice(0, 4).forEach(s => {
+                            h +=
+                                `<span class="tag-suggestion" onclick="sendPreset('${s.titulo}')">${s.titulo}</span>`;
+                        });
+                        h += '</div>';
+                        addMsg(h);
+                        contextTopic = null;
+                    } else {
+                        addMsg(
+                            '<p class="text-sm text-gray-300">Não consegui identificar o tema. Pergunte sobre <strong>carência, período de graça, aposentadoria por idade, auxílio-doença, BPC/LOAS</strong> ou outro tópico do INSS.</p>'
+                            );
+                        contextTopic = null;
+                    }
+                }, 550);
+            }
+
+            window.sendMessage = function() {
+                const inp = document.getElementById('userInput');
+                const t = inp.value.trim();
+                if (!t) return;
+                inp.value = '';
+                processMsg(t);
+            };
+            window.sendPreset = function(t) { document.getElementById('userInput').value = t;
+                window.sendMessage(); };
+            window.clearChat = function() {
+                document.getElementById('chatContainer').innerHTML = '';
+                contextTopic = null;
+                addMsg(
+                    `<div><p class="text-sm text-gray-200">👋 Olá! Sou o <strong>INSS Master AI</strong>, professor virtual da Central 135.</p><p class="text-sm text-gray-300 mt-1">Pergunte o que quiser sobre INSS. Ex: <span class="text-purple-300">"o que é carência?"</span>, <span class="text-purple-300">"como funciona o auxílio-doença?"</span> ou <span class="text-purple-300">"o que é período de graça?"</span></p></div>`
+                    );
+            };
+            window.showDecorar = function(id) {
+                const e = DB.find(x => x.id === id);
+                if (e) addMsg(
+                    `<div class="highlight-box" style="border-left-color:#f59e0b;background:rgba(245,158,11,0.1);"><span class="text-amber-400 font-semibold text-sm">🧠 FRASE PARA DECORAR</span><p class="text-white text-base font-bold mt-1">${e.decorar}</p></div>`
+                    );
+            };
+
+            // ==================== FLASHCARDS ====================
+            let flIdx = 0;
+            window.openFlashcards = function() {
+                flIdx = 0;
+                updateFlashcard();
+                document.getElementById('flashcardModal').classList.remove('hidden');
+                document.getElementById('flashcardInner').classList.remove('flipped');
+            };
+            window.flipFlashcard = function() { document.getElementById('flashcardInner').classList.toggle(
+                    'flipped'); };
+            window.nextFlashcard = function() { flIdx = (flIdx + 1) % DB.length;
+                updateFlashcard(); };
+            window.prevFlashcard = function() { flIdx = (flIdx - 1 + DB.length) % DB.length;
+                updateFlashcard(); };
+
+            function updateFlashcard() {
+                const e = DB[flIdx];
+                document.getElementById('flashcardQ').textContent = 'O que é: ' + e.titulo + '?';
+                document.getElementById('flashcardA').textContent = e.decorar;
+                document.getElementById('flashcardCounter').textContent = `${flIdx+1} de ${DB.length}`;
+                document.getElementById('flashcardInner').classList.remove('flipped');
+            }
+
+            // ==================== QUIZ ====================
+            let qzEntry = null;
+            let qzCorrect = '';
+            let qzScore = 0;
+            let qzTotal = 0;
+            window.openQuiz = function() { qzEntry = null;
+                qzScore = 0;
+                qzTotal = 0;
+                genQuiz();
+                document.getElementById('quizModal').classList.remove('hidden'); };
+            window.openQuizWithTopic = function(id) { qzEntry = DB.find(e => e.id === id);
+                qzScore = 0;
+                qzTotal = 0;
+                genQuiz();
+                document.getElementById('quizModal').classList.remove('hidden'); };
+            window.nextQuizQuestion = function() {
+                document.querySelectorAll('#quizOptions button').forEach(b => { b.style.pointerEvents = 'auto';
+                    b.style.opacity = '1';
+                    b.style.borderColor = '#26262c';
+                    b.style.background = '#18181d'; });
+                document.getElementById('quizFeedback').textContent = '';
+                document.getElementById('quizExplanation').classList.add('hidden');
+                genQuiz();
+            };
+
+            function genQuiz() {
+                const entry = qzEntry || DB[Math.floor(Math.random() * DB.length)];
+                qzEntry = null;
+                const q = `❓ ${entry.titulo}: qual a frase correta para decorar?`;
+                document.getElementById('quizQuestion').textContent = q;
+                qzCorrect = entry.decorar;
+                const others = DB.filter(e => e.id !== entry.id).sort(() => Math.random() - 0.5).slice(0, 3);
+                const opts = [{ text: entry.decorar, correct: true, explanation: entry.conceito }, ...others.map(o => ({
+                    text: o.decorar,
+                    correct: false,
+                    explanation: 'Essa frase é de outro tópico: ' + o.titulo
+                }))].sort(() => Math.random() - 0.5);
+                const cont = document.getElementById('quizOptions');
+                cont.innerHTML = opts.map((o, i) => `
+            <button onclick="selectQuizOpt(${i},this)" data-correct="${o.correct}" data-explanation="${o.explanation.replace(/"/g,'&quot;')}" class="w-full text-left p-3 rounded-xl border border-[#26262c] bg-[#18181d] text-gray-200 text-sm hover:border-purple-500 transition">${String.fromCharCode(65+i)}. ${o.text}</button>
+          `).join('');
+                document.getElementById('quizFeedback').textContent = '';
+                document.getElementById('quizExplanation').classList.add('hidden');
+                document.getElementById('quizScore').textContent = `Acertos: ${qzScore}/${qzTotal}`;
+            }
+            window.selectQuizOpt = function(idx, btn) {
+                const correct = btn.dataset.correct === 'true';
+                const expl = btn.dataset.explanation;
+                qzTotal++;
+                if (correct) qzScore++;
+                document.querySelectorAll('#quizOptions button').forEach(b => { b.style.pointerEvents = 'none';
+                    b.style.opacity = '0.7'; });
+                btn.style.borderColor = correct ? '#10b981' : '#ef4444';
+                btn.style.background = correct ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+                document.getElementById('quizFeedback').textContent = correct ? '✅ Correto! Muito bem!' :
+                    '❌ Errado. Veja a explicação:';
+                const explEl = document.getElementById('quizExplanation');
+                explEl.textContent = expl;
+                explEl.classList.remove('hidden');
+                document.getElementById('quizScore').textContent = `Acertos: ${qzScore}/${qzTotal}`;
+                if (!correct) {
+                    document.querySelectorAll('#quizOptions button').forEach(b => { if (b.dataset.correct === 'true') {
+                            b.style.borderColor = '#10b981';
+                            b.style.background = 'rgba(16,185,129,0.15)'; } });
+                }
+            };
+
+            // ==================== UI ====================
+            function populateSidebar() {
+                const list = document.getElementById('topicList');
+                const cats = [...new Set(DB.map(e => e.categoria))];
+                let h = '';
+                cats.forEach(cat => {
+                    h +=
+                        `<p class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mt-3 mb-1">${cat}</p>`;
+                    DB.filter(e => e.categoria === cat).forEach(e => {
+                        h +=
+                            `<div class="glass-card px-3 py-2.5 text-sm text-gray-200 flex items-center gap-2" onclick="sendPreset('${e.titulo}')"><i class="fa-solid fa-bookmark text-purple-400 text-xs"></i><span class="truncate">${e.titulo}</span></div>`;
+                    });
+                });
+                list.innerHTML = h;
+            }
+
+            function populateQuickButtons() {
+                const c = document.getElementById('quickButtons');
+                const sample = ['Carência', 'Período de Graça', 'Qualidade de Segurado', 'Aposentadoria por Idade',
+                    'Auxílio-Doença', 'BPC/LOAS'
+                ];
+                c.innerHTML = sample.map(s =>
+                    `<button onclick="sendPreset('${s}')" class="text-xs bg-[#1a1a21] text-gray-300 px-3 py-1.5 rounded-full border border-[#2a2a2e] hover:border-purple-500 transition">${s}</button>`
+                    ).join('');
+            }
+            window.toggleSidebar = function() { document.getElementById('sidebar').classList.toggle('visible'); };
+
+            populateSidebar();
+            populateQuickButtons();
+            window.clearChat();
+        })();
+    </script>
+</body>
+</html>
